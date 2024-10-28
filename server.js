@@ -7,7 +7,7 @@ const loginRoutes = require('./routes/login');
 const interviewRoutes = require('./routes/interview');
 
 const app = express();
-const PORT = 5000;
+const PORT = 3000;
 
 app.use(cors());
 app.use(bodyParser.json());

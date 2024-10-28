@@ -30,8 +30,8 @@ router.post('/login', async (req, res) => {
   const user = await Interviewee.findOne({ email });
 
   if (user && (await bcrypt.compare(password, user.password))) {
-    const token = jwt.sign({ userId: user._id }, 'secretKey');
-    res.json({ token });
+    const token = jwt.sign({ userId: user._id, name: user.name }, 'secretKey'); // Include name in token payload
+    res.json({ token, user: { name: user.name, email: user.email } }); // Return user details
   } else {
     res.status(400).send('Invalid credentials');
   }

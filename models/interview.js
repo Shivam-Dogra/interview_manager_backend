@@ -19,6 +19,9 @@ const InterviewSchema = new mongoose.Schema({
       ref: 'Interviewee',
     },
   ],
+  intervieweesName: [{
+    type: String, 
+  }],
   skillset: {
     type: [String],
   },

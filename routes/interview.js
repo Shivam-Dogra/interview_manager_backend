@@ -119,8 +119,19 @@ router.get('/stats', authMiddleware, async (req, res) => {
 
       // Average Time Spent on Interviews
       const averageDuration = await Interview.aggregate([
-          { $group: { _id: null, averageDuration: { $avg: '$duration' } } }
-      ]);
+        {
+            $group: {
+                _id: null,
+                averageDuration: { $avg: '$duration' }
+            }
+        },
+        {
+            $project: {
+                averageDuration: { $round: ['$averageDuration', 2] } // Round to 2 decimal places
+            }
+        }
+    ]);
+    
 
       // Combine all results
       const results = {
@@ -142,5 +153,41 @@ router.get('/stats', authMiddleware, async (req, res) => {
   }
 });
 
+router.get('/all', authMiddleware, async (req, res) => {
+  try {
+    const interviews = await Interview.find({});
+    res.json(interviews);
+  } catch (error) {
+    console.error('Error fetching all interviews:', error);
+    res.status(500).send('Error fetching all interviews');
+  }
+});
+
+router.get('/top', async (req, res) => {
+  try {
+    const interviews = await Interview.find({});
+
+    const intervieweeCounts = {};
+    interviews.forEach(interview => {
+      if (Array.isArray(interview.intervieweesName)) {
+        interview.intervieweesName.forEach(name => {
+          if (name) {
+            intervieweeCounts[name] = (intervieweeCounts[name] || 0) + 1;
+          }
+        });
+      }
+    });
+
+    const topInterviewees = Object.entries(intervieweeCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count]) => ({ name, count }));
+
+    res.json(topInterviewees);
+  } catch (error) {
+    console.error('Error fetching top interviewees:', error.stack || error.message);
+    res.status(500).json({ error: 'Failed to fetch interviews' });
+  }
+});
 
 module.exports = router;

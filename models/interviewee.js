@@ -35,6 +35,17 @@ const IntervieweeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  linkedin: {
+    type: String,
+    default: '',
+  },
+  skills: {
+    type: [String], default: [], 
+  },
+  about: {
+    type: String,
+    default: '', 
+  }
 });
 
 module.exports = mongoose.model('Interviewee', IntervieweeSchema);

@@ -3,6 +3,7 @@ const Interview = require('../models/interview');
 const router = express.Router();
 const moment = require('moment');
 const authMiddleware = require('../middleware/authMiddleware');
+const Interviewee = require('../models/interviewee');
 
 router.post('/schedule', authMiddleware, async (req, res) => {
   try {
@@ -189,5 +190,52 @@ router.get('/top', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch interviews' });
   }
 });
+
+router.get('/:username', async (req, res) => {
+  try {
+    const username = decodeURIComponent(req.params.username);
+    console.log('Fetching user details for username:', username);
+
+    const user = await Interviewee.findOne({ name: new RegExp(`^${username}$`, 'i') }).select('-password'); // Exclude password for security
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json(user); // Return all fields
+  } catch (error) {
+    console.error('Error fetching user details:', error);
+    res.status(500).json({ message: 'Error fetching user details', error: error.message });
+  }
+});
+
+router.put('/update-profile/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedData = req.body;
+
+    // Log updated data to verify the incoming payload
+    console.log('Updated Data:', updatedData);
+
+    const updatedUser = await Interviewee.findByIdAndUpdate(
+      id,
+      updatedData,
+      { new: true, runValidators: true } // Return the updated document and validate fields
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ message: 'Error updating profile', error: error.message });
+  }
+});
+
+
+
+
 
 module.exports = router;
